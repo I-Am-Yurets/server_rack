@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд | ServerRack Monitor</title>
+    <script>(function(){const t=localStorage.getItem('srm-theme')||'dark';if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');})();</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { /* brand-primary=#39ff14, surface-card=#2d2d2d */
+            darkMode: 'class',
+            theme: { extend: {
+                colors: {
+                    'ch': { 900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a' },
+                    'neon': { DEFAULT:'#39ff14' },
+                },
+                animation: { 'pulse-slow':'pulse 2s infinite', 'blink':'blink 1s infinite' },
+                keyframes: { blink:{'0%,100%':{opacity:'1'},'50%':{opacity:'0'}} }
+            }}
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family:'Inter',sans-serif; }
+        .font-mono { font-family:'JetBrains Mono',monospace !important; }
+        .scrollbar-thin::-webkit-scrollbar{width:4px}
+        .scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+        .scrollbar-thin::-webkit-scrollbar-thumb{background:#4a4a4a;border-radius:2px}
+        .gauge-progress{transition:stroke-dashoffset 1s ease}
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-ch-800 text-gray-900 dark:text-white transition-colors duration-300">
+
+<div id="overlay" class="fixed inset-0 bg-black/60 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex min-h-screen">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar" class="fixed lg:static top-0 left-0 h-full w-64 bg-white dark:bg-ch-700 border-r border-gray-200 dark:border-ch-600 flex flex-col gap-6 p-6 z-30 transition-transform duration-300 -translate-x-full lg:translate-x-0 shadow-lg lg:shadow-none">
+
+        <div class="flex items-center gap-4 px-2">
+            <div class="w-10 h-10 bg-[#39ff14] rounded-lg flex items-center justify-center font-bold text-ch-800 text-sm flex-shrink-0">SR</div>
+            <div>
+                <div class="font-bold text-gray-900 dark:text-white">ServerRack</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400">Monitor v2.0</div>
+            </div>
+        </div>
+
+        <nav class="flex flex-col gap-1 flex-1">
+            <a href="server-monitoring-dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-brand-primary text-surface-base font-semibold text-sm">
+                <i class="fa-solid fa-gauge-high w-5 text-center"></i> Дашборд
+            </a>
+            <a href="servers-management.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all">
+                <i class="fa-solid fa-server w-5 text-center"></i> Сервери
+            </a>
+            <a href="analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all">
+                <i class="fa-solid fa-chart-line w-5 text-center"></i> Аналітика
+            </a>
+            <a href="alerts.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all">
+                <i class="fa-solid fa-bell w-5 text-center"></i> Сповіщення
+                <span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">7</span>
+            </a>
+            <a href="network.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all">
+                <i class="fa-solid fa-network-wired w-5 text-center"></i> Мережа
+            </a>
+            <a href="cpu-details.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all">
+                <i class="fa-solid fa-microchip w-5 text-center"></i> CPU Деталі
+            </a>
+            <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all">
+                <i class="fa-solid fa-gear w-5 text-center"></i> Налаштування
+            </a>
+        </nav>
+
+        <!-- Theme toggle -->
+        <div class="bg-gray-100 dark:bg-ch-600 rounded-xl p-4 flex items-center justify-between">
+            <span class="text-xs text-gray-500 dark:text-ch-400 font-medium">🎨 Тема</span>
+            <div class="flex bg-gray-200 dark:bg-ch-500 rounded-full p-1 gap-1">
+                <button id="btn-dark" onclick="setTheme('dark')" class="px-3 py-1 rounded-full text-xs font-semibold transition-all">🌙</button>
+                <button id="btn-light" onclick="setTheme('light')" class="px-3 py-1 rounded-full text-xs font-semibold transition-all">☀️</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="flex-1 p-6 lg:p-8 overflow-y-auto min-w-0">
+
+        <header class="flex items-center justify-between mb-8 pb-6 border-b border-gray-200 dark:border-ch-600">
+            <div class="flex items-center gap-4">
+                <button class="lg:hidden p-2 rounded-lg bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600" onclick="toggleSidebar()">☰</button>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Моніторинг стійки</h1>
+                    <p class="text-sm text-gray-500 dark:text-ch-400 mt-1">Rack-01 • Дата-центр UA-1</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex items-center gap-2 bg-neon/10 border border-neon/40 text-green-700 dark:text-neon text-xs font-semibold px-4 py-2 rounded-full">
+                    <span class="w-2 h-2 bg-neon rounded-full animate-pulse-slow"></span>
+                    Всі системи OK
+                </div>
+                <time id="clock" class="text-xs text-gray-400 dark:text-ch-400 font-mono hidden md:block"></time>
+            </div>
+        </header>
+
+        <!-- Warning banner -->
+        <section class="bg-yellow-50 dark:bg-yellow-500/10 border-l-4 border-yellow-400 dark:border-yellow-500 rounded-lg px-6 py-4 mb-8 text-sm">
+            ⚠️ <strong class="text-yellow-700 dark:text-yellow-400">backup-srv-01</strong>
+            <span class="text-gray-600 dark:text-gray-300"> має підвищене навантаження CPU (87%).</span>
+            <a href="servers-management.html" class="text-green-700 dark:text-neon underline ml-2 font-semibold">Переглянути деталі →</a>
+        </section>
+
+        <!-- KPI: 4 cards -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+            <a href="analytics.html" class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 flex flex-col gap-3 hover:border-neon hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold">Uptime</span>
+                    <span class="opacity-40 group-hover:opacity-100 transition-opacity">📡</span>
+                </div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">99.8%</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400">За останні 30 днів</div>
+            </a>
+            <a href="cpu-details.html" class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 flex flex-col gap-3 hover:border-neon hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold">CPU Avg</span>
+                    <span class="opacity-40 group-hover:opacity-100 transition-opacity">⚙️</span>
+                </div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">45%</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400">По всіх серверах</div>
+            </a>
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 flex flex-col gap-3 hover:border-neon transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold">Підключень</span>
+                    <span class="opacity-40">🔗</span>
+                </div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">247</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400">Активних SSH сесій</div>
+            </div>
+            <a href="network.html" class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 flex flex-col gap-3 hover:border-neon hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold">Мережа</span>
+                    <span class="opacity-40 group-hover:opacity-100 transition-opacity">🌐</span>
+                </div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">2.4<span class="text-base ml-1">GB/s</span></div>
+                <div class="text-xs text-gray-500 dark:text-ch-400">↓ Download</div>
+            </a>
+        </section>
+
+        <!-- Widgets row -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
+
+            <!-- CPU Gauge -->
+            <a href="cpu-details.html" class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 flex flex-col items-center gap-4 hover:border-neon hover:-translate-y-1 transition-all duration-300">
+                <span class="self-start text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold w-full"><i class="fa-solid fa-temperature-half mr-1"></i>Температура CPU</span>
+                <div class="relative w-44 h-44">
+                    <svg class="-rotate-90" viewBox="0 0 200 200" width="176" height="176">
+                        <circle fill="none" stroke="#e5e7eb" class="dark:[stroke:#3a3a3a]" cx="100" cy="100" r="84" stroke-width="16"/>
+                        <circle fill="none" stroke="#39ff14" cx="100" cy="100" r="84" stroke-width="16" stroke-linecap="round" stroke-dasharray="527.8" stroke-dashoffset="184"/>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-4xl font-bold text-green-600 dark:text-neon font-mono">62</span>
+                        <span class="text-sm text-gray-500 dark:text-ch-400 mt-1">°C</span>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-ch-400">Норма: до 85°C</div>
+            </a>
+
+            <!-- SSH Sessions -->
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 flex flex-col gap-4 hover:border-neon transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold"><i class="fa-solid fa-lock mr-1"></i>SSH Сесії</span>
+                    <span class="text-xs text-green-600 dark:text-neon font-semibold">● 3 активних</span>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center justify-between bg-gray-50 dark:bg-ch-600 rounded-lg px-4 py-3">
+                        <div><div class="font-semibold text-sm">admin</div><div class="text-xs text-gray-500 dark:text-ch-400 font-mono">192.168.1.105</div></div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-neon rounded-full"></span><span class="text-xs text-gray-500 dark:text-ch-400">2h 14m</span></div>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 dark:bg-ch-600 rounded-lg px-4 py-3">
+                        <div><div class="font-semibold text-sm">deploy</div><div class="text-xs text-gray-500 dark:text-ch-400 font-mono">10.0.0.42</div></div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-neon rounded-full"></span><span class="text-xs text-gray-500 dark:text-ch-400">45m</span></div>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 dark:bg-ch-600 rounded-lg px-4 py-3">
+                        <div><div class="font-semibold text-sm">monitor</div><div class="text-xs text-gray-500 dark:text-ch-400 font-mono">172.16.0.5</div></div>
+                        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-neon rounded-full"></span><span class="text-xs text-gray-500 dark:text-ch-400">3h 02m</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Metrics -->
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 flex flex-col gap-4 hover:border-neon transition-all duration-300">
+                <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold"><i class="fa-solid fa-gauge-high mr-2"></i>Системні метрики</span>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-2"><span>RAM</span><span class="text-green-600 dark:text-neon font-mono">11.5 / 16 GB</span></div>
+                        <progress value="72" max="100" class="w-full h-2 rounded-full accent-green-500 dark:accent-neon"></progress>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-2"><span>Диск /</span><span class="text-green-600 dark:text-neon font-mono">245 / 500 GB</span></div>
+                        <progress value="49" max="100" class="w-full h-2 rounded-full accent-green-500 dark:accent-neon"></progress>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-2"><span>Swap</span><span class="text-green-600 dark:text-neon font-mono">1.2 / 8 GB</span></div>
+                        <progress value="15" max="100" class="w-full h-2 rounded-full accent-green-500 dark:accent-neon"></progress>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Network + Servers -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
+            <a href="network.html" class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 flex flex-col gap-4 hover:border-neon hover:-translate-y-1 transition-all duration-300">
+                <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold"><i class="fa-solid fa-network-wired mr-2"></i>Мережеве навантаження</span>
+                <div class="flex gap-6">
+                    <div class="flex flex-col gap-1"><span class="text-xs text-gray-500 dark:text-ch-400">Download</span><span class="text-2xl font-bold text-green-600 dark:text-neon font-mono">2.4 <span class="text-sm">GB/s</span></span><span class="text-xs text-green-600 dark:text-neon">↑ 12% від норми</span></div>
+                    <div class="flex flex-col gap-1"><span class="text-xs text-gray-500 dark:text-ch-400">Upload</span><span class="text-2xl font-bold text-green-600 dark:text-neon font-mono">1.8 <span class="text-sm">GB/s</span></span><span class="text-xs text-gray-500 dark:text-ch-400">↓ 5% від норми</span></div>
+                    <div class="flex flex-col gap-1"><span class="text-xs text-gray-500 dark:text-ch-400">Latency</span><span class="text-2xl font-bold text-green-600 dark:text-neon font-mono">12 <span class="text-sm">ms</span></span><span class="text-xs text-green-600 dark:text-neon">Оптимально</span></div>
+                </div>
+                <div class="h-12 bg-green-50 dark:bg-neon/5 rounded-lg"></div>
+            </a>
+
+            <a href="servers-management.html" class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 flex flex-col gap-4 hover:border-neon hover:-translate-y-1 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold"><i class="fa-solid fa-server mr-2"></i>Стан серверів</span>
+                    <span class="text-xs text-green-600 dark:text-neon">5 серверів</span>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-3 bg-gray-50 dark:bg-ch-600 rounded-lg px-4 py-3"><span class="w-3 h-3 bg-neon rounded-full flex-shrink-0"></span><div class="flex-1"><div class="text-sm font-semibold">web-prod-01</div><div class="text-xs text-gray-400 dark:text-ch-400 font-mono">192.168.1.101</div></div><span class="text-xs text-green-600 dark:text-neon">Online</span></div>
+                    <div class="flex items-center gap-3 bg-gray-50 dark:bg-ch-600 rounded-lg px-4 py-3"><span class="w-3 h-3 bg-neon rounded-full flex-shrink-0"></span><div class="flex-1"><div class="text-sm font-semibold">db-master-01</div><div class="text-xs text-gray-400 dark:text-ch-400 font-mono">192.168.1.102</div></div><span class="text-xs text-green-600 dark:text-neon">Online</span></div>
+                    <div class="flex items-center gap-3 bg-gray-50 dark:bg-ch-600 rounded-lg px-4 py-3"><span class="w-3 h-3 bg-yellow-400 rounded-full flex-shrink-0"></span><div class="flex-1"><div class="text-sm font-semibold">backup-srv-01</div><div class="text-xs text-gray-400 dark:text-ch-400 font-mono">192.168.1.104</div></div><span class="text-xs text-yellow-600 dark:text-yellow-400">High Load</span></div>
+                    <div class="flex items-center gap-3 bg-gray-50 dark:bg-ch-600 rounded-lg px-4 py-3"><span class="w-3 h-3 bg-neon rounded-full flex-shrink-0"></span><div class="flex-1"><div class="text-sm font-semibold">api-gateway-01</div><div class="text-xs text-gray-400 dark:text-ch-400 font-mono">192.168.1.105</div></div><span class="text-xs text-green-600 dark:text-neon">Online</span></div>
+                </div>
+            </a>
+        </section>
+
+        <!-- UNIQUE COMPONENT: System Console -->
+        <section class="bg-gray-900 dark:bg-black border border-green-500/40 dark:border-neon/50 rounded-xl p-6 shadow-[0_0_30px_rgba(57,255,20,0.08)]">
+            <header class="flex items-center justify-between pb-4 border-b border-gray-700 dark:border-ch-600 mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-neon uppercase tracking-wider font-semibold font-mono">System Console</span>
+                    <span class="text-xs text-neon animate-pulse-slow font-mono">● Live Feed</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="clearConsole()" class="px-3 py-1.5 bg-gray-800 dark:bg-ch-700 border border-gray-600 dark:border-ch-600 rounded text-xs text-gray-300 dark:text-white hover:border-neon hover:text-neon transition-all">Clear</button>
+                    <button class="px-3 py-1.5 bg-gray-800 dark:bg-ch-700 border border-gray-600 dark:border-ch-600 rounded text-xs text-gray-300 dark:text-white hover:border-neon hover:text-neon transition-all">Export</button>
+                    <button class="px-3 py-1.5 bg-gray-800 dark:bg-ch-700 border border-gray-600 dark:border-ch-600 rounded text-xs text-gray-300 dark:text-white hover:border-neon hover:text-neon transition-all">Filter</button>
+                </div>
+            </header>
+            <div id="console-log" class="h-56 overflow-y-auto scrollbar-thin font-mono text-xs flex flex-col gap-0.5">
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:23:45</span><span class="text-blue-400 min-w-[60px]">[INFO]</span><span class="text-gray-400">System initialization complete</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:23:47</span><span class="text-neon min-w-[60px]">[OK]</span><span class="text-gray-400">SSH daemon started on port 22</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:24:12</span><span class="text-blue-400 min-w-[60px]">[INFO]</span><span class="text-gray-400">New connection from 192.168.1.105 accepted</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:24:15</span><span class="text-neon min-w-[60px]">[OK]</span><span class="text-gray-400">User 'admin' authenticated successfully</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:25:03</span><span class="text-yellow-400 min-w-[60px]">[WARN]</span><span class="text-gray-400">CPU temperature reached 65°C on core 2</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:25:18</span><span class="text-blue-400 min-w-[60px]">[INFO]</span><span class="text-gray-400">Database backup completed: 2.4GB archived</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:27:33</span><span class="text-yellow-400 min-w-[60px]">[WARN]</span><span class="text-gray-400">Disk usage on /dev/sda1 exceeded 60%</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:29:12</span><span class="text-red-400 min-w-[60px]">[ERROR]</span><span class="text-gray-400">Failed to connect to backup-srv-01: timeout</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:29:18</span><span class="text-neon min-w-[60px]">[OK]</span><span class="text-gray-400">Connection restored to backup-srv-01</span></div>
+                <div class="flex gap-4 py-0.5"><span class="text-gray-500 min-w-[60px]">14:30:22</span><span class="text-neon min-w-[60px]">[OK]</span><span class="text-gray-400">All systems operational <span id="cursor" class="inline-block w-1.5 h-3 bg-neon animate-blink align-middle ml-1"></span></span></div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+    function setTheme(t) {
+        localStorage.setItem('srm-theme', t);
+        document.documentElement.classList.toggle('dark', t === 'dark');
+        updateThemeUI();
+    }
+    function updateThemeUI() {
+        const t = localStorage.getItem('srm-theme') || 'dark';
+        const base = 'px-3 py-1 rounded-full text-xs font-semibold transition-all';
+        document.getElementById('btn-dark').className  = base + (t==='dark'  ? ' bg-neon text-ch-800' : ' text-gray-500 dark:text-ch-400');
+        document.getElementById('btn-light').className = base + (t==='light' ? ' bg-neon text-ch-800' : ' text-gray-500 dark:text-ch-400');
+    }
+    updateThemeUI();
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('hidden');
+    }
+
+    function updateClock() {
+        document.getElementById('clock').textContent = new Date().toLocaleTimeString('uk-UA');
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    const logEl = document.getElementById('console-log');
+    logEl.scrollTop = logEl.scrollHeight;
+    const LEVELS = [{k:'INFO',c:'text-blue-400'},{k:'OK',c:'text-neon'},{k:'WARN',c:'text-yellow-400'},{k:'ERROR',c:'text-red-400'}];
+    const MSGS = ['Health check completed','Network packet received','Cache cleared: 245 entries','API request processed in 23ms','Memory usage within normal range','Firewall rule applied','Cron job executed: system-health-check'];
+    function addLog() {
+        const now = new Date().toTimeString().split(' ')[0];
+        const lvl = LEVELS[Math.floor(Math.random()*LEVELS.length)];
+        const msg = MSGS[Math.floor(Math.random()*MSGS.length)];
+        document.getElementById('cursor')?.remove();
+        const line = document.createElement('div');
+        line.className = 'flex gap-4 py-0.5';
+        line.innerHTML = `<span class="text-gray-500 min-w-[60px]">${now}</span><span class="${lvl.c} min-w-[60px]">[${lvl.k}]</span><span class="text-gray-400">${msg} <span id="cursor" class="inline-block w-1.5 h-3 bg-neon animate-blink align-middle ml-1"></span></span>`;
+        logEl.appendChild(line);
+        logEl.scrollTop = logEl.scrollHeight;
+        if (logEl.children.length > 60) logEl.firstElementChild.remove();
+    }
+    function clearConsole() { logEl.innerHTML = ''; }
+    setInterval(addLog, 4000);
+</script>
+</body>
+</html>

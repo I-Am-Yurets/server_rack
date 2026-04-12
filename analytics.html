@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналітика | ServerRack Monitor</title>
+    <script>(function(){const t=localStorage.getItem('srm-theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark');})();</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{'brand-primary':'#39ff14','brand-secondary':'#2acc10','surface-base':'#1a1a1a','surface-card':'#2d2d2d','surface-raised':'#3a3a3a','surface-overlay':'#4a4a4a','text-muted':'#6a6a6a','status-error':'#ff3939','status-warning':'#ffa500','status-ok':'#39ff14','ch':{900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a'},'neon':{DEFAULT:'#39ff14'}},animation:{'pulse-slow':'pulse 2s infinite'},keyframes:{}}}};</script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Inter',sans-serif}.font-mono{font-family:'JetBrains Mono',monospace!important}</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-ch-800 text-gray-900 dark:text-white transition-colors duration-300">
+
+<div id="overlay" class="fixed inset-0 bg-black/60 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed lg:static top-0 left-0 h-full w-64 bg-white dark:bg-ch-700 border-r border-gray-200 dark:border-ch-600 flex flex-col gap-6 p-6 z-30 transition-transform duration-300 -translate-x-full lg:translate-x-0 shadow-lg lg:shadow-none">
+        <div class="flex items-center gap-4 px-2">
+            <div class="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center font-bold text-ch-800 text-sm flex-shrink-0">SR</div>
+            <div><div class="font-bold text-gray-900 dark:text-white">ServerRack</div><div class="text-xs text-gray-500 dark:text-ch-400">Monitor v2.0</div></div>
+        </div>
+        <nav class="flex flex-col gap-1 flex-1">
+            <a href="server-monitoring-dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-gauge-high w-5 text-center"></i> Дашборд</a>
+            <a href="servers-management.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-server w-5 text-center"></i> Сервери</a>
+            <a href="analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-brand-primary text-surface-base font-semibold text-sm"><i class="fa-solid fa-chart-line w-5 text-center"></i> Аналітика</a>
+            <a href="alerts.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-bell w-5 text-center"></i> Сповіщення<span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">7</span></a>
+            <a href="network.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-network-wired w-5 text-center"></i> Мережа</a>
+            <a href="cpu-details.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-microchip w-5 text-center"></i> CPU Деталі</a>
+            <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-gear w-5 text-center"></i> Налаштування</a>
+        </nav>
+        <div class="bg-gray-100 dark:bg-ch-600 rounded-xl p-4 flex items-center justify-between">
+            <span class="text-xs text-gray-500 dark:text-ch-400 font-medium">🎨 Тема</span>
+            <div class="flex bg-gray-200 dark:bg-ch-500 rounded-full p-1 gap-1">
+                <button id="btn-dark" onclick="setTheme('dark')" class="px-3 py-1 rounded-full text-xs font-semibold transition-all">🌙 </button>
+                <button id="btn-light" onclick="setTheme('light')" class="px-3 py-1 rounded-full text-xs font-semibold transition-all">☀️ </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-6 lg:p-8 overflow-y-auto min-w-0">
+
+        <header class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-200 dark:border-ch-600">
+            <button class="lg:hidden p-2 rounded-lg bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600" onclick="toggleSidebar()">☰</button>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-green-700 dark:text-neon"><i class="fa-solid fa-chart-line mr-2"></i>Аналітика</h1>
+                <p class="text-sm text-gray-500 dark:text-ch-400 mt-1">Детальна статистика продуктивності серверної стійки</p>
+            </div>
+        </header>
+
+        <!-- KPI stats -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 hover:border-green-400 dark:hover:border-neon transition-all">
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold mb-3">Середній Uptime</div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">99.8%</div>
+                <div class="text-xs text-green-600 dark:text-neon mt-2">↑ 0.2% за місяць</div>
+            </div>
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 hover:border-green-400 dark:hover:border-neon transition-all">
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold mb-3">Запитів/секунду</div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">12.4K</div>
+                <div class="text-xs text-green-600 dark:text-neon mt-2">↑ 15% за тиждень</div>
+            </div>
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 hover:border-green-400 dark:hover:border-neon transition-all">
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold mb-3">Час відгуку</div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">45<span class="text-base ml-1">ms</span></div>
+                <div class="text-xs text-green-600 dark:text-neon mt-2">↓ 8ms покращення</div>
+            </div>
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5 hover:border-green-400 dark:hover:border-neon transition-all">
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold mb-3">Енергоспоживання</div>
+                <div class="text-3xl font-bold text-green-600 dark:text-neon font-mono">4.2<span class="text-base ml-1">kW</span></div>
+                <div class="text-xs text-red-500 dark:text-red-400 mt-2">↑ 3% за добу</div>
+            </div>
+        </section>
+
+        <!-- CPU bar chart -->
+        <section class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 mb-6">
+            <h2 class="text-base font-semibold mb-6">Завантаження CPU за 24 години</h2>
+            <div class="flex items-end gap-2 h-48">
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:50%"></div><span class="text-xs text-gray-400 dark:text-ch-400">00:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:38%"></div><span class="text-xs text-gray-400 dark:text-ch-400">02:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:32%"></div><span class="text-xs text-gray-400 dark:text-ch-400">04:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:55%"></div><span class="text-xs text-gray-400 dark:text-ch-400">06:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:72%"></div><span class="text-xs text-gray-400 dark:text-ch-400">08:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:80%"></div><span class="text-xs text-gray-400 dark:text-ch-400">10:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-100 cursor-pointer" style="height:90%"></div><span class="text-xs text-gray-400 dark:text-ch-400">12:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:85%"></div><span class="text-xs text-gray-400 dark:text-ch-400">14:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:68%"></div><span class="text-xs text-gray-400 dark:text-ch-400">16:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:58%"></div><span class="text-xs text-gray-400 dark:text-ch-400">18:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:45%"></div><span class="text-xs text-gray-400 dark:text-ch-400">20:00</span></div>
+                <div class="flex flex-col items-center gap-2 flex-1 h-full justify-end"><div class="w-full bg-green-500 dark:bg-neon rounded-t opacity-75 hover:opacity-100 transition-opacity cursor-pointer" style="height:40%"></div><span class="text-xs text-gray-400 dark:text-ch-400">22:00</span></div>
+            </div>
+        </section>
+
+        <!-- RAM usage per server -->
+        <section class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 mb-6">
+            <h2 class="text-base font-semibold mb-6">Використання пам'яті по серверах</h2>
+            <div class="flex flex-col gap-5">
+                <div>
+                    <div class="flex justify-between text-sm mb-2"><span class="font-mono text-gray-600 dark:text-ch-400">web-prod-01</span><span class="text-green-600 dark:text-neon font-mono">11.2 GB / 16 GB</span></div>
+                    <progress value="70" max="100" class="w-full h-2.5 rounded-full accent-green-500 dark:accent-neon"></progress>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2"><span class="font-mono text-gray-600 dark:text-ch-400">db-master-01</span><span class="text-green-600 dark:text-neon font-mono">26.2 GB / 32 GB</span></div>
+                    <progress value="82" max="100" class="w-full h-2.5 rounded-full accent-green-500 dark:accent-neon"></progress>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2"><span class="font-mono text-gray-600 dark:text-ch-400">cache-redis-01</span><span class="text-green-600 dark:text-neon font-mono">7.2 GB / 16 GB</span></div>
+                    <progress value="45" max="100" class="w-full h-2.5 rounded-full accent-green-500 dark:accent-neon"></progress>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2"><span class="font-mono text-gray-600 dark:text-ch-400">backup-srv-01</span><span class="text-yellow-600 dark:text-yellow-400 font-mono">30.4 GB / 32 GB</span></div>
+                    <progress value="95" max="100" class="w-full h-2.5 rounded-full accent-yellow-500"></progress>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2"><span class="font-mono text-gray-600 dark:text-ch-400">api-gateway-01</span><span class="text-green-600 dark:text-neon font-mono">8.3 GB / 16 GB</span></div>
+                    <progress value="52" max="100" class="w-full h-2.5 rounded-full accent-green-500 dark:accent-neon"></progress>
+                </div>
+            </div>
+        </section>
+
+        <!-- Top processes -->
+        <section class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-6 mb-6">
+            <h2 class="text-base font-semibold mb-4">Топ процесів за навантаженням</h2>
+            <div class="flex flex-col divide-y divide-gray-100 dark:divide-ch-600">
+                <div class="flex items-center justify-between py-4">
+                    <div><div class="font-semibold text-sm font-mono">postgres</div><div class="text-xs text-gray-500 dark:text-ch-400 mt-1">db-master-01</div></div>
+                    <div class="flex gap-6 text-xs text-gray-500 dark:text-ch-400">
+                        <div>CPU: <span class="text-green-600 dark:text-neon font-mono font-semibold">24%</span></div>
+                        <div>RAM: <span class="text-green-600 dark:text-neon font-mono font-semibold">8.2 GB</span></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between py-4">
+                    <div><div class="font-semibold text-sm font-mono">nginx</div><div class="text-xs text-gray-500 dark:text-ch-400 mt-1">web-prod-01</div></div>
+                    <div class="flex gap-6 text-xs text-gray-500 dark:text-ch-400">
+                        <div>CPU: <span class="text-green-600 dark:text-neon font-mono font-semibold">18%</span></div>
+                        <div>RAM: <span class="text-green-600 dark:text-neon font-mono font-semibold">2.1 GB</span></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between py-4">
+                    <div><div class="font-semibold text-sm font-mono">redis-server</div><div class="text-xs text-gray-500 dark:text-ch-400 mt-1">cache-redis-01</div></div>
+                    <div class="flex gap-6 text-xs text-gray-500 dark:text-ch-400">
+                        <div>CPU: <span class="text-green-600 dark:text-neon font-mono font-semibold">12%</span></div>
+                        <div>RAM: <span class="text-green-600 dark:text-neon font-mono font-semibold">4.8 GB</span></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between py-4">
+                    <div><div class="font-semibold text-sm font-mono">rsync</div><div class="text-xs text-gray-500 dark:text-ch-400 mt-1">backup-srv-01</div></div>
+                    <div class="flex gap-6 text-xs text-gray-500 dark:text-ch-400">
+                        <div>CPU: <span class="text-yellow-600 dark:text-yellow-400 font-mono font-semibold">65%</span></div>
+                        <div>RAM: <span class="text-green-600 dark:text-neon font-mono font-semibold">1.2 GB</span></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between py-4">
+                    <div><div class="font-semibold text-sm font-mono">node</div><div class="text-xs text-gray-500 dark:text-ch-400 mt-1">api-gateway-01</div></div>
+                    <div class="flex gap-6 text-xs text-gray-500 dark:text-ch-400">
+                        <div>CPU: <span class="text-green-600 dark:text-neon font-mono font-semibold">15%</span></div>
+                        <div>RAM: <span class="text-green-600 dark:text-neon font-mono font-semibold">3.5 GB</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Info box -->
+        <aside class="bg-blue-50 dark:bg-ch-700 border-l-4 border-blue-400 dark:border-blue-500 rounded-lg px-6 py-5 text-sm">
+            <strong class="text-blue-700 dark:text-blue-400"><i class="fa-solid fa-gauge-high mr-2"></i>Висновки аналітики:</strong>
+            <ul class="mt-3 pl-5 list-disc flex flex-col gap-1 text-gray-600 dark:text-ch-400">
+                <li>Загальна продуктивність системи в межах норми</li>
+                <li>Пік навантаження спостерігається о 12:00–16:00</li>
+                <li>backup-srv-01 потребує уваги: високе CPU та RAM використання</li>
+                <li>Рекомендується оптимізація процесу rsync на backup сервері</li>
+            </ul>
+        </aside>
+
+    </main>
+</div>
+
+<script>
+    function setTheme(t){localStorage.setItem('srm-theme',t);document.documentElement.classList.toggle('dark',t==='dark');updateThemeUI();}
+    function updateThemeUI(){
+        const t=localStorage.getItem('srm-theme')||'dark';
+        const base='px-3 py-1 rounded-full text-xs font-semibold transition-all';
+        document.getElementById('btn-dark').className=base+(t==='dark'?' bg-neon text-ch-800':' text-gray-500 dark:text-ch-400');
+        document.getElementById('btn-light').className=base+(t==='light'?' bg-neon text-ch-800':' text-gray-500 dark:text-ch-400');
+    }
+    updateThemeUI();
+    function toggleSidebar(){document.getElementById('sidebar').classList.toggle('-translate-x-full');document.getElementById('overlay').classList.toggle('hidden');}
+</script>
+</body>
+</html>
