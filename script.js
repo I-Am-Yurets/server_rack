@@ -750,6 +750,7 @@ function broadcastState() {
         ramTotal:       systemState.ramTotal,
         uptime:         systemState.uptime,
         sshCount:       systemState.sshCount,
+        sensorInterval: systemState.sensorInterval,  // зберігаємо інтервал
         ts:             Date.now(),
     }));
 }
@@ -786,14 +787,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const raw = localStorage.getItem('srm-live-state');
         if (raw) {
             const s = JSON.parse(raw);
-            if (s.cpuLoad) systemState.cpuLoad = s.cpuLoad;
-            if (s.cpuTemp) systemState.cpuTemp = s.cpuTemp;
-            if (s.networkDown) systemState.networkDown = s.networkDown;
-            if (s.networkUp) systemState.networkUp = s.networkUp;
+            // Відновлюємо числові значення (тільки якщо вони є і не 0)
+            if (s.cpuLoad)        systemState.cpuLoad        = s.cpuLoad;
+            if (s.cpuTemp)        systemState.cpuTemp        = s.cpuTemp;
+            if (s.networkDown)    systemState.networkDown    = s.networkDown;
+            if (s.networkUp)      systemState.networkUp      = s.networkUp;
             if (s.networkLatency) systemState.networkLatency = s.networkLatency;
-            if (s.ramUsed) systemState.ramUsed = s.ramUsed;
-            if (s.uptime) systemState.uptime = s.uptime;
-            if (s.sshCount) systemState.sshCount = s.sshCount;
+            if (s.ramUsed)        systemState.ramUsed        = s.ramUsed;
+            if (s.uptime)         systemState.uptime         = s.uptime;
+            if (s.sshCount)       systemState.sshCount       = s.sshCount;
+            // Відновлюємо інтервал оновлення (якщо він був змінений)
+            if (s.sensorInterval && s.sensorInterval >= 1000 && s.sensorInterval <= 60000) {
+                systemState.sensorInterval = s.sensorInterval;
+            }
             // Відновлюємо UI кнопки, якщо моніторинг ставили на паузу
             if (s.hasOwnProperty('isMonitoring') && !s.isMonitoring) {
                 systemState.isMonitoring = true; // Для коректного toggle
@@ -805,10 +811,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ініціалізуємо Chart.js
     initLiveChart();
 
-    // Перший рендер всіх показників
-    updateAllSensors();
+    // Перший рендер — тільки відображаємо відновлені значення, БЕЗ генерації нових
+    // (updateAllSensors генерує нові випадкові числа і затерло б відновлений стан)
+    updateCpuGauge();
+    updateCpuLoad();
+    updateSshCount();
+    updateNetwork();
+    updateMetrics();
+    updateUptime();
+    updateSystemName();
 
-    // Запускаємо циклічне оновлення датчиків
+    // Запускаємо циклічне оновлення датчиків з відновленим інтервалом
     systemState.sensorTimer = setInterval(updateAllSensors, systemState.sensorInterval);
 
     // ── Кнопки toggle датасетів графіка
