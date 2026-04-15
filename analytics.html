@@ -6,7 +6,7 @@
     <title>Аналітика | ServerRack Monitor</title>
     <script>(function(){const t=localStorage.getItem('srm-theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark');})();</script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{'brand-primary':'#39ff14','brand-secondary':'#2acc10','surface-base':'#1a1a1a','surface-card':'#2d2d2d','surface-raised':'#3a3a3a','surface-overlay':'#4a4a4a','text-muted':'#6a6a6a','status-error':'#ff3939','status-warning':'#ffa500','status-ok':'#39ff14','ch':{900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a'},'neon':{DEFAULT:'#39ff14'}},animation:{'pulse-slow':'pulse 2s infinite'},keyframes:{}}}};</script>
+    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{'brand-primary':'#39ff14','brand-secondary':'#2acc10','surface-base':'#1a1a1a','surface-card':'#2d2d2d','surface-raised':'#3a3a3a','surface-overlay':'#4a4a4a','text-muted':'#6a6a6a','status-error':'#ff3939','status-warning':'#ffa500','status-ok':'#39ff14','ch':{900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a'},'neon':{DEFAULT:'#39ff14',dim:'rgba(57,255,20,0.15)'},'charcoal':{900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a'}},animation:{'pulse-slow':'pulse 2s infinite','gauge':'gauge 1s ease forwards'},keyframes:{gauge:{'from':{strokeDashoffset:'527.8'},'to':{strokeDashoffset:'184'}}}}}};</script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>body{font-family:'Inter',sans-serif}.font-mono{font-family:'JetBrains Mono',monospace!important}</style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -20,12 +20,12 @@
     <aside id="sidebar" class="fixed lg:static top-0 left-0 h-full w-64 bg-white dark:bg-ch-700 border-r border-gray-200 dark:border-ch-600 flex flex-col gap-6 p-6 z-30 transition-transform duration-300 -translate-x-full lg:translate-x-0 shadow-lg lg:shadow-none">
         <div class="flex items-center gap-4 px-2">
             <div class="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center font-bold text-ch-800 text-sm flex-shrink-0">SR</div>
-            <div><div class="font-bold text-gray-900 dark:text-white">ServerRack</div><div class="text-xs text-gray-500 dark:text-ch-400">Monitor v2.0</div></div>
+            <div><div class="font-bold text-gray-900 dark:text-white" id="app-system-name">ServerRack</div><div class="text-xs text-gray-500 dark:text-ch-400">Monitor v2.0</div></div>
         </div>
         <nav class="flex flex-col gap-1 flex-1">
             <a href="server-monitoring-dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-gauge-high w-5 text-center"></i> Дашборд</a>
             <a href="servers-management.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-server w-5 text-center"></i> Сервери</a>
-            <a href="analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-brand-primary text-surface-base font-semibold text-sm"><i class="fa-solid fa-chart-line w-5 text-center"></i> Аналітика</a>
+            <a href="analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#39ff14] text-[#1a1a1a] font-semibold text-sm"><i class="fa-solid fa-chart-line w-5 text-center"></i> Аналітика</a>
             <a href="alerts.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-bell w-5 text-center"></i> Сповіщення<span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">7</span></a>
             <a href="network.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-network-wired w-5 text-center"></i> Мережа</a>
             <a href="cpu-details.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-microchip w-5 text-center"></i> CPU Деталі</a>
@@ -50,6 +50,22 @@
                 <p class="text-sm text-gray-500 dark:text-ch-400 mt-1">Детальна статистика продуктивності серверної стійки</p>
             </div>
         </header>
+
+        <!-- Live signal bar from dashboard -->
+        <div id="live-signal-bar" class="hidden mb-6 bg-white dark:bg-ch-700 border border-ch-600 border-l-4 border-l-neon rounded-xl px-5 py-3">
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-satellite-dish text-neon text-xs animate-pulse"></i>
+                    <span class="text-xs text-ch-400 uppercase tracking-wider font-semibold">Live з дашборду</span>
+                    <span id="ls-status" class="text-xs font-mono font-semibold"></span>
+                </div>
+                <span class="text-xs text-ch-400">CPU <span id="ls-cpu" class="font-mono font-bold text-neon">--</span></span>
+                <span class="text-xs text-ch-400">Temp <span id="ls-temp" class="font-mono font-bold text-neon">--</span></span>
+                <span class="text-xs text-ch-400">RAM <span id="ls-ram" class="font-mono font-bold text-blue-400">--</span></span>
+                <span class="text-xs text-ch-400">Мережа↓ <span id="ls-net" class="font-mono font-bold text-orange-400">--</span></span>
+                <div class="ml-auto text-xs text-ch-400 font-mono">Оновлено: <span id="ls-ts">--</span></div>
+            </div>
+        </div>
 
         <!-- KPI stats -->
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -182,11 +198,73 @@
     function updateThemeUI(){
         const t=localStorage.getItem('srm-theme')||'dark';
         const base='px-3 py-1 rounded-full text-xs font-semibold transition-all';
-        document.getElementById('btn-dark').className=base+(t==='dark'?' bg-neon text-ch-800':' text-gray-500 dark:text-ch-400');
-        document.getElementById('btn-light').className=base+(t==='light'?' bg-neon text-ch-800':' text-gray-500 dark:text-ch-400');
+        document.getElementById('btn-dark').className=base+(t==='dark'?' bg-[#39ff14] text-[#1a1a1a]':' text-gray-500 dark:text-ch-400');
+        document.getElementById('btn-light').className=base+(t==='light'?' bg-[#39ff14] text-[#1a1a1a]':' text-gray-500 dark:text-ch-400');
     }
     updateThemeUI();
     function toggleSidebar(){document.getElementById('sidebar').classList.toggle('-translate-x-full');document.getElementById('overlay').classList.toggle('hidden');}
+
+    // Cross-tab theme sync + live data
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'srm-settings') loadSavedSettings();
+        if (e.key === 'srm-theme') {
+            document.documentElement.classList.toggle('dark', e.newValue === 'dark');
+            updateThemeUI();
+        }
+        if (e.key === 'srm-live-state') {
+            try { receiveLiveState(JSON.parse(e.newValue)); } catch(_) {}
+        }
+    });
+
+    
+    function loadSavedSettings() {
+        try {
+            const raw = localStorage.getItem('srm-settings');
+            if (raw) {
+                const s = JSON.parse(raw);
+                if (s.systemName) {
+                    const el = document.getElementById('app-system-name');
+                    if (el) el.textContent = s.systemName;
+                }
+            }
+        } catch(_) {}
+    }
+    loadSavedSettings();
+
+    function receiveLiveState(s) {
+        const bar = document.getElementById('live-signal-bar');
+        if (bar) bar.classList.remove('hidden');
+
+        const st = document.getElementById('ls-status');
+        if (st) {
+            st.textContent = s.isMonitoring ? '● Live' : '■ Paused';
+            st.className = s.isMonitoring
+                ? 'text-xs font-mono font-semibold text-neon animate-pulse'
+                : 'text-xs font-mono font-semibold text-gray-400';
+        }
+        const cpu = document.getElementById('ls-cpu');
+        if (cpu) cpu.textContent = s.cpuLoad + '%';
+        const temp = document.getElementById('ls-temp');
+        if (temp) temp.textContent = s.cpuTemp + '°C';
+        const ram = document.getElementById('ls-ram');
+        if (ram) ram.textContent = Math.round((s.ramUsed / (s.ramTotal || 16)) * 100) + '%';
+        const net = document.getElementById('ls-net');
+        if (net) net.textContent = Number(s.networkDown).toFixed(1) + ' GB/s';
+        const ts = document.getElementById('ls-ts');
+        if (ts) ts.textContent = new Date(s.ts).toLocaleTimeString('uk-UA');
+    }
+
+    // Перевіряємо при завантаженні
+    try { const r = localStorage.getItem('srm-live-state'); if (r) receiveLiveState(JSON.parse(r)); } catch(_) {}
+
+    // Cross-tab theme sync
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'srm-settings') loadSavedSettings();
+        if (e.key === 'srm-theme') {
+            document.documentElement.classList.toggle('dark', e.newValue === 'dark');
+            updateThemeUI();
+        }
+    });
 </script>
 </body>
 </html>

@@ -6,38 +6,33 @@
     <title>Управління серверами | ServerRack Monitor</title>
     <script>(function(){const t=localStorage.getItem('srm-theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark')})();</script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { /* brand-primary=#39ff14, surface-card=#2d2d2d */
-            darkMode:'class',
-            theme:{ extend:{ colors:{ 'charcoal':{900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a'}, 'neon':{DEFAULT:'#39ff14',dim:'rgba(57,255,20,0.15)'} } } }
-        }
-    </script>
+    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{'brand-primary':'#39ff14','brand-secondary':'#2acc10','surface-base':'#1a1a1a','surface-card':'#2d2d2d','surface-raised':'#3a3a3a','surface-overlay':'#4a4a4a','text-muted':'#6a6a6a','status-error':'#ff3939','status-warning':'#ffa500','status-ok':'#39ff14','ch':{900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a'},'neon':{DEFAULT:'#39ff14',dim:'rgba(57,255,20,0.15)'},'charcoal':{900:'#0f0f0f',800:'#1a1a1a',700:'#2d2d2d',600:'#3a3a3a',500:'#4a4a4a',400:'#6a6a6a'}},animation:{'pulse-slow':'pulse 2s infinite','gauge':'gauge 1s ease forwards'},keyframes:{gauge:{'from':{strokeDashoffset:'527.8'},'to':{strokeDashoffset:'184'}}}}}};</script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>body{font-family:'Inter',sans-serif}.font-mono{font-family:'JetBrains Mono',monospace}</style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body class="bg-gray-100 dark:bg-charcoal-800 text-gray-900 dark:text-white transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-ch-800 text-gray-900 dark:text-white transition-colors duration-300">
 <div id="overlay" class="fixed inset-0 bg-black/60 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
 <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed lg:static top-0 left-0 h-full w-64 bg-white dark:bg-charcoal-700 border-r border-gray-200 dark:border-charcoal-600 flex flex-col gap-6 p-6 z-30 transition-transform duration-300 -translate-x-full lg:translate-x-0">
+    <aside id="sidebar" class="fixed lg:static top-0 left-0 h-full w-64 bg-white dark:bg-ch-700 border-r border-gray-200 dark:border-ch-600 flex flex-col gap-6 p-6 z-30 transition-transform duration-300 -translate-x-full lg:translate-x-0">
         <div class="flex items-center gap-4 px-2">
-            <div class="w-10 h-10 bg-[#39ff14] rounded-lg flex items-center justify-center font-bold text-charcoal-800 text-sm flex-shrink-0">SR</div>
-            <div><div class="font-bold text-gray-900 dark:text-white">ServerRack</div><div class="text-xs text-gray-500 dark:text-charcoal-400">Monitor v2.0</div></div>
+            <div class="w-10 h-10 bg-[#39ff14] rounded-lg flex items-center justify-center font-bold text-ch-800 text-sm flex-shrink-0">SR</div>
+            <div><div class="font-bold text-gray-900 dark:text-white" id="app-system-name">ServerRack</div><div class="text-xs text-gray-500 dark:text-ch-400">Monitor v2.0</div></div>
         </div>
         <nav class="flex flex-col gap-2 flex-1">
-            <a href="server-monitoring-dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-charcoal-400 hover:bg-gray-100 dark:hover:bg-charcoal-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-gauge-high w-5 text-center"></i> Дашборд</a>
-            <a href="servers-management.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-neon text-charcoal-800 font-semibold text-sm"><i class="fa-solid fa-server w-5 text-center"></i> Сервери</a>
-            <a href="analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-charcoal-400 hover:bg-gray-100 dark:hover:bg-charcoal-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-chart-line w-5 text-center"></i> Аналітика</a>
-            <a href="alerts.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-charcoal-400 hover:bg-gray-100 dark:hover:bg-charcoal-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-bell w-5 text-center"></i> Сповіщення<span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">7</span></a>
-            <a href="network.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-charcoal-400 hover:bg-gray-100 dark:hover:bg-charcoal-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-network-wired w-5 text-center"></i> Мережа</a>
-            <a href="cpu-details.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-charcoal-400 hover:bg-gray-100 dark:hover:bg-charcoal-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-microchip w-5 text-center"></i> CPU Деталі</a>
-            <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-charcoal-400 hover:bg-gray-100 dark:hover:bg-charcoal-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-gear w-5 text-center"></i> Налаштування</a>
+            <a href="server-monitoring-dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-gauge-high w-5 text-center"></i> Дашборд</a>
+            <a href="servers-management.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#39ff14] text-[#1a1a1a] font-semibold text-sm"><i class="fa-solid fa-server w-5 text-center"></i> Сервери</a>
+            <a href="analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-chart-line w-5 text-center"></i> Аналітика</a>
+            <a href="alerts.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-bell w-5 text-center"></i> Сповіщення<span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">7</span></a>
+            <a href="network.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-network-wired w-5 text-center"></i> Мережа</a>
+            <a href="cpu-details.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-microchip w-5 text-center"></i> CPU Деталі</a>
+            <a href="settings.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-ch-400 hover:bg-gray-100 dark:hover:bg-ch-600 hover:text-gray-900 dark:hover:text-white text-sm transition-all"><i class="fa-solid fa-gear w-5 text-center"></i> Налаштування</a>
         </nav>
-        <div class="bg-gray-100 dark:bg-charcoal-600 rounded-xl p-4 flex items-center justify-between">
-            <span class="text-xs text-gray-500 dark:text-charcoal-400 font-medium">🎨 Тема</span>
-            <div class="flex bg-gray-200 dark:bg-charcoal-500 rounded-full p-1 gap-1">
+        <div class="bg-gray-100 dark:bg-ch-600 rounded-xl p-4 flex items-center justify-between">
+            <span class="text-xs text-gray-500 dark:text-ch-400 font-medium">🎨 Тема</span>
+            <div class="flex bg-gray-200 dark:bg-ch-500 rounded-full p-1 gap-1">
                 <button id="btn-dark" onclick="setTheme('dark')" class="px-3 py-1 rounded-full text-xs font-semibold transition-all">🌙</button>
                 <button id="btn-light" onclick="setTheme('light')" class="px-3 py-1 rounded-full text-xs font-semibold transition-all">☀️</button>
             </div>
@@ -46,38 +41,76 @@
 
     <!-- Main -->
     <main class="flex-1 p-6 lg:p-8 overflow-y-auto min-w-0">
-        <header class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-200 dark:border-charcoal-600">
-            <button class="lg:hidden p-2 rounded-lg bg-white dark:bg-charcoal-700 border border-gray-200 dark:border-charcoal-600 text-gray-700 dark:text-white" onclick="toggleSidebar()">☰</button>
+        <header class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-200 dark:border-ch-600">
+            <button class="lg:hidden p-2 rounded-lg bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 text-gray-700 dark:text-white" onclick="toggleSidebar()">☰</button>
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-green-700 dark:text-neon"><i class="fa-solid fa-server mr-2"></i>Управління серверами</h1>
-                <p class="text-sm text-charcoal-400 mt-1">Повний контроль над серверною інфраструктурою</p>
+                <p class="text-sm text-ch-400 mt-1">Повний контроль над серверною інфраструктурою</p>
             </div>
         </header>
 
         <!-- Summary cards -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white dark:bg-charcoal-700 border border-gray-200 dark:border-charcoal-600 rounded-xl p-5">
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5">
                 <div class="text-3xl font-bold text-green-600 dark:text-neon">5</div>
-                <div class="text-xs text-gray-500 dark:text-charcoal-400 uppercase tracking-wider mt-2">Всього серверів</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider mt-2">Всього серверів</div>
             </div>
-            <div class="bg-white dark:bg-charcoal-700 border border-gray-200 dark:border-charcoal-600 rounded-xl p-5">
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5">
                 <div class="text-3xl font-bold text-green-600 dark:text-neon">4</div>
-                <div class="text-xs text-gray-500 dark:text-charcoal-400 uppercase tracking-wider mt-2">Online</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider mt-2">Online</div>
             </div>
-            <div class="bg-white dark:bg-charcoal-700 border border-gray-200 dark:border-charcoal-600 rounded-xl p-5">
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5">
                 <div class="text-3xl font-bold text-yellow-400">1</div>
-                <div class="text-xs text-gray-500 dark:text-charcoal-400 uppercase tracking-wider mt-2">Попередження</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider mt-2">Попередження</div>
             </div>
-            <div class="bg-white dark:bg-charcoal-700 border border-gray-200 dark:border-charcoal-600 rounded-xl p-5">
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5">
                 <div class="text-3xl font-bold text-green-600 dark:text-neon">98.2%</div>
-                <div class="text-xs text-gray-500 dark:text-charcoal-400 uppercase tracking-wider mt-2">Uptime</div>
+                <div class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider mt-2">Uptime</div>
             </div>
         </section>
 
+        <!-- Live Broadcast Bar: з'являється автоматично коли дашборд відкрито в іншій вкладці -->
+        <div id="live-signal-bar" class="hidden mb-6 bg-white dark:bg-ch-700 border border-ch-600 border-l-4 border-l-neon rounded-xl px-5 py-3 transition-all duration-300">
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-satellite-dish text-green-600 dark:text-neon text-xs animate-pulse"></i>
+                    <span class="text-xs text-gray-500 dark:text-ch-400 uppercase tracking-wider font-semibold">Live з дашборду</span>
+                    <span id="ls-status" class="text-xs font-mono font-semibold"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-ch-400">CPU</span>
+                    <span id="ls-cpu" class="text-xs font-mono font-bold text-green-600 dark:text-neon min-w-[34px]">--</span>
+                    <div class="w-20 h-1.5 bg-ch-500 rounded-full overflow-hidden">
+                        <div id="ls-cpu-bar" class="h-full bg-neon rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-ch-400">Temp</span>
+                    <span id="ls-temp" class="text-xs font-mono font-bold text-green-600 dark:text-neon">--</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-ch-400">RAM</span>
+                    <span id="ls-ram" class="text-xs font-mono font-bold text-blue-500 dark:text-blue-400 min-w-[34px]">--</span>
+                    <div class="w-20 h-1.5 bg-ch-500 rounded-full overflow-hidden">
+                        <div id="ls-ram-bar" class="h-full bg-blue-400 rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-ch-400">Мережа ↓</span>
+                    <span id="ls-net" class="text-xs font-mono font-bold text-orange-400">--</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-ch-400">Uptime</span>
+                    <span id="ls-uptime" class="text-xs font-mono font-bold text-green-600 dark:text-neon">--</span>
+                </div>
+                <div class="ml-auto text-xs text-gray-400 dark:text-ch-400 font-mono">Оновлено: <span id="ls-ts">--</span></div>
+            </div>
+        </div>
+
         <!-- Server table — desktop -->
-        <section class="bg-white dark:bg-charcoal-700 border border-gray-200 dark:border-charcoal-600 rounded-xl overflow-hidden hidden md:block">
+        <section class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl overflow-hidden hidden md:block">
             <table class="w-full">
-                <thead class="bg-gray-100 dark:bg-charcoal-600">
+                <thead class="bg-gray-100 dark:bg-ch-600">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs text-neon uppercase tracking-wider font-semibold">Сервер</th>
                         <th class="px-6 py-4 text-left text-xs text-neon uppercase tracking-wider font-semibold">IP адреса</th>
@@ -88,51 +121,51 @@
                         <th class="px-6 py-4 text-left text-xs text-neon uppercase tracking-wider font-semibold">Дії</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-charcoal-600">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-charcoal-600 transition-colors">
-                        <td class="px-6 py-4"><div class="font-semibold">web-prod-01</div><div class="text-xs text-charcoal-400">Production Web Server</div></td>
-                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-charcoal-400">192.168.1.101</td>
+                <tbody class="divide-y divide-gray-100 dark:divide-ch-600">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-ch-600 transition-colors">
+                        <td class="px-6 py-4"><div class="font-semibold">web-prod-01</div><div class="text-xs text-ch-400">Production Web Server</div></td>
+                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-ch-400">192.168.1.101</td>
                         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 bg-neon/10 text-neon text-xs font-semibold px-3 py-1 rounded-full"><span class="w-1.5 h-1.5 bg-neon rounded-full"></span>Online</span></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">42%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:42%"></div></div></div></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">68%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:68%"></div></div></div></td>
-                        <td class="px-6 py-4 text-xs text-charcoal-400 font-mono">127d 14h</td>
-                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','web-prod-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','web-prod-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">42%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:42%"></div></div></div></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">68%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:68%"></div></div></div></td>
+                        <td class="px-6 py-4 text-xs text-ch-400 font-mono">127d 14h</td>
+                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','web-prod-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','web-prod-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
                     </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-charcoal-600 transition-colors">
-                        <td class="px-6 py-4"><div class="font-semibold">db-master-01</div><div class="text-xs text-charcoal-400">PostgreSQL Primary</div></td>
-                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-charcoal-400">192.168.1.102</td>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-ch-600 transition-colors">
+                        <td class="px-6 py-4"><div class="font-semibold">db-master-01</div><div class="text-xs text-ch-400">PostgreSQL Primary</div></td>
+                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-ch-400">192.168.1.102</td>
                         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 bg-neon/10 text-neon text-xs font-semibold px-3 py-1 rounded-full"><span class="w-1.5 h-1.5 bg-neon rounded-full"></span>Online</span></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">58%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:58%"></div></div></div></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">82%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:82%"></div></div></div></td>
-                        <td class="px-6 py-4 text-xs text-charcoal-400 font-mono">89d 6h</td>
-                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','db-master-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','db-master-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">58%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:58%"></div></div></div></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">82%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:82%"></div></div></div></td>
+                        <td class="px-6 py-4 text-xs text-ch-400 font-mono">89d 6h</td>
+                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','db-master-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','db-master-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
                     </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-charcoal-600 transition-colors">
-                        <td class="px-6 py-4"><div class="font-semibold">cache-redis-01</div><div class="text-xs text-charcoal-400">Redis Cache Server</div></td>
-                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-charcoal-400">192.168.1.103</td>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-ch-600 transition-colors">
+                        <td class="px-6 py-4"><div class="font-semibold">cache-redis-01</div><div class="text-xs text-ch-400">Redis Cache Server</div></td>
+                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-ch-400">192.168.1.103</td>
                         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 bg-neon/10 text-neon text-xs font-semibold px-3 py-1 rounded-full"><span class="w-1.5 h-1.5 bg-neon rounded-full"></span>Online</span></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">23%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:23%"></div></div></div></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">45%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:45%"></div></div></div></td>
-                        <td class="px-6 py-4 text-xs text-charcoal-400 font-mono">127d 14h</td>
-                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','cache-redis-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','cache-redis-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">23%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:23%"></div></div></div></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">45%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:45%"></div></div></div></td>
+                        <td class="px-6 py-4 text-xs text-ch-400 font-mono">127d 14h</td>
+                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','cache-redis-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','cache-redis-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
                     </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-charcoal-600 transition-colors border-l-4 border-yellow-500">
-                        <td class="px-6 py-4"><div class="font-semibold">backup-srv-01</div><div class="text-xs text-charcoal-400">Backup &amp; Storage</div></td>
-                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-charcoal-400">192.168.1.104</td>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-ch-600 transition-colors border-l-4 border-yellow-500">
+                        <td class="px-6 py-4"><div class="font-semibold">backup-srv-01</div><div class="text-xs text-ch-400">Backup &amp; Storage</div></td>
+                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-ch-400">192.168.1.104</td>
                         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 bg-yellow-500/10 text-yellow-400 text-xs font-semibold px-3 py-1 rounded-full"><span class="w-1.5 h-1.5 bg-yellow-400 rounded-full"></span>High Load</span></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px] text-yellow-400">87%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-yellow-400 rounded-full" style="width:87%"></div></div></div></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">76%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:76%"></div></div></div></td>
-                        <td class="px-6 py-4 text-xs text-charcoal-400 font-mono">45d 12h</td>
-                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','backup-srv-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','backup-srv-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px] text-yellow-400">87%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-yellow-400 rounded-full" style="width:87%"></div></div></div></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">76%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:76%"></div></div></div></td>
+                        <td class="px-6 py-4 text-xs text-ch-400 font-mono">45d 12h</td>
+                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','backup-srv-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','backup-srv-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
                     </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-charcoal-600 transition-colors">
-                        <td class="px-6 py-4"><div class="font-semibold">api-gateway-01</div><div class="text-xs text-charcoal-400">API Gateway / Load Balancer</div></td>
-                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-charcoal-400">192.168.1.105</td>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-ch-600 transition-colors">
+                        <td class="px-6 py-4"><div class="font-semibold">api-gateway-01</div><div class="text-xs text-ch-400">API Gateway / Load Balancer</div></td>
+                        <td class="px-6 py-4 font-mono text-xs text-gray-400 dark:text-ch-400">192.168.1.105</td>
                         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 bg-neon/10 text-neon text-xs font-semibold px-3 py-1 rounded-full"><span class="w-1.5 h-1.5 bg-neon rounded-full"></span>Online</span></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">35%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:35%"></div></div></div></td>
-                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">52%</span><div class="flex-1 h-1.5 bg-charcoal-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:52%"></div></div></div></td>
-                        <td class="px-6 py-4 text-xs text-charcoal-400 font-mono">127d 14h</td>
-                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','api-gateway-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','api-gateway-01')" class="px-3 py-1.5 bg-transparent border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">35%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:35%"></div></div></div></td>
+                        <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-sm font-mono min-w-[35px]">52%</span><div class="flex-1 h-1.5 bg-ch-500 rounded-full overflow-hidden"><div class="h-full bg-neon rounded-full" style="width:52%"></div></div></div></td>
+                        <td class="px-6 py-4 text-xs text-ch-400 font-mono">127d 14h</td>
+                        <td class="px-6 py-4 flex gap-2"><button onclick="doAction('Restart','api-gateway-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','api-gateway-01')" class="px-3 py-1.5 bg-transparent border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -140,8 +173,8 @@
 
         <!-- Mobile card list -->
         <section class="md:hidden flex flex-col gap-4">
-            <div class="bg-white dark:bg-charcoal-700 border border-gray-200 dark:border-charcoal-600 rounded-xl p-5"><div class="flex justify-between items-start mb-3"><div><div class="font-semibold">web-prod-01</div><div class="text-xs text-gray-400 dark:text-charcoal-400 font-mono mt-1">192.168.1.101</div></div><span class="bg-neon/10 text-neon text-xs font-semibold px-3 py-1 rounded-full">Online</span></div><div class="flex gap-4 text-xs mb-3"><div><div class="text-charcoal-400 mb-1">CPU</div><div class="font-mono text-neon">42%</div></div><div><div class="text-charcoal-400 mb-1">RAM</div><div class="font-mono text-neon">68%</div></div><div><div class="text-charcoal-400 mb-1">Uptime</div><div class="font-mono text-charcoal-400">127d 14h</div></div></div><div class="flex gap-2"><button onclick="doAction('Restart','web-prod-01')" class="flex-1 py-2 border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','web-prod-01')" class="flex-1 py-2 border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></div></div>
-            <div class="bg-charcoal-700 border border-yellow-500/50 rounded-xl p-5"><div class="flex justify-between items-start mb-3"><div><div class="font-semibold">backup-srv-01</div><div class="text-xs text-gray-400 dark:text-charcoal-400 font-mono mt-1">192.168.1.104</div></div><span class="bg-yellow-500/10 text-yellow-400 text-xs font-semibold px-3 py-1 rounded-full">High Load</span></div><div class="flex gap-4 text-xs mb-3"><div><div class="text-charcoal-400 mb-1">CPU</div><div class="font-mono text-yellow-400">87%</div></div><div><div class="text-charcoal-400 mb-1">RAM</div><div class="font-mono text-neon">76%</div></div><div><div class="text-charcoal-400 mb-1">Uptime</div><div class="font-mono text-charcoal-400">45d 12h</div></div></div><div class="flex gap-2"><button onclick="doAction('Restart','backup-srv-01')" class="flex-1 py-2 border border-yellow-500/50 rounded text-xs text-yellow-400 hover:border-yellow-400 transition-all">Restart</button><button onclick="doAction('SSH','backup-srv-01')" class="flex-1 py-2 border border-charcoal-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></div></div>
+            <div class="bg-white dark:bg-ch-700 border border-gray-200 dark:border-ch-600 rounded-xl p-5"><div class="flex justify-between items-start mb-3"><div><div class="font-semibold">web-prod-01</div><div class="text-xs text-gray-400 dark:text-ch-400 font-mono mt-1">192.168.1.101</div></div><span class="bg-neon/10 text-neon text-xs font-semibold px-3 py-1 rounded-full">Online</span></div><div class="flex gap-4 text-xs mb-3"><div><div class="text-ch-400 mb-1">CPU</div><div class="font-mono text-neon">42%</div></div><div><div class="text-ch-400 mb-1">RAM</div><div class="font-mono text-neon">68%</div></div><div><div class="text-ch-400 mb-1">Uptime</div><div class="font-mono text-ch-400">127d 14h</div></div></div><div class="flex gap-2"><button onclick="doAction('Restart','web-prod-01')" class="flex-1 py-2 border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">Restart</button><button onclick="doAction('SSH','web-prod-01')" class="flex-1 py-2 border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></div></div>
+            <div class="bg-ch-700 border border-yellow-500/50 rounded-xl p-5"><div class="flex justify-between items-start mb-3"><div><div class="font-semibold">backup-srv-01</div><div class="text-xs text-gray-400 dark:text-ch-400 font-mono mt-1">192.168.1.104</div></div><span class="bg-yellow-500/10 text-yellow-400 text-xs font-semibold px-3 py-1 rounded-full">High Load</span></div><div class="flex gap-4 text-xs mb-3"><div><div class="text-ch-400 mb-1">CPU</div><div class="font-mono text-yellow-400">87%</div></div><div><div class="text-ch-400 mb-1">RAM</div><div class="font-mono text-neon">76%</div></div><div><div class="text-ch-400 mb-1">Uptime</div><div class="font-mono text-ch-400">45d 12h</div></div></div><div class="flex gap-2"><button onclick="doAction('Restart','backup-srv-01')" class="flex-1 py-2 border border-yellow-500/50 rounded text-xs text-yellow-400 hover:border-yellow-400 transition-all">Restart</button><button onclick="doAction('SSH','backup-srv-01')" class="flex-1 py-2 border border-ch-500 rounded text-xs hover:border-neon hover:text-neon transition-all">SSH</button></div></div>
         </section>
 
         <!-- Warning -->
@@ -153,10 +186,95 @@
 </div>
 <script>
     function setTheme(t){localStorage.setItem('srm-theme',t);document.documentElement.classList.toggle('dark',t==='dark');updateThemeUI();}
-    function updateThemeUI(){const t=localStorage.getItem("srm-theme")||"dark";const base="px-3 py-1 rounded-full text-xs font-semibold transition-all";document.getElementById("btn-dark").className=base+(t==="dark"?" bg-neon text-charcoal-800":" text-gray-500 dark:text-charcoal-400");document.getElementById("btn-light").className=base+(t==="light"?" bg-neon text-charcoal-800":" text-gray-500 dark:text-charcoal-400");}
+    function updateThemeUI(){const t=localStorage.getItem("srm-theme")||"dark";const base="px-3 py-1 rounded-full text-xs font-semibold transition-all";document.getElementById("btn-dark").className=base+(t==="dark"?" bg-[#39ff14] text-[#1a1a1a]":" text-gray-500 dark:text-ch-400");document.getElementById("btn-light").className=base+(t==="light"?" bg-[#39ff14] text-[#1a1a1a]":" text-gray-500 dark:text-ch-400");}
     updateThemeUI();
     function toggleSidebar(){document.getElementById('sidebar').classList.toggle('-translate-x-full');document.getElementById('overlay').classList.toggle('hidden');}
     function doAction(a,s){alert(`Дія "${a}" для сервера ${s}`);}
+
+    /* ═══ Cross-tab sync ═══ */
+
+    // 1) Тема: синхронізуємо зміну теми з інших вкладок
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'srm-settings') loadSavedSettings();
+        if (e.key === 'srm-theme') {
+            document.documentElement.classList.toggle('dark', e.newValue === 'dark');
+            updateThemeUI();
+        }
+        // 2) Live-state: отримуємо дані з дашборду
+        if (e.key === 'srm-live-state') {
+            try { receiveLiveState(JSON.parse(e.newValue)); } catch(_) {}
+        }
+    });
+
+    /**
+     * Отримує стан з дашборду і оновлює live-бадж на цій сторінці
+     * @param {Object} s — srm-live-state payload
+     */
+    
+    function loadSavedSettings() {
+        try {
+            const raw = localStorage.getItem('srm-settings');
+            if (raw) {
+                const s = JSON.parse(raw);
+                if (s.systemName) {
+                    const el = document.getElementById('app-system-name');
+                    if (el) el.textContent = s.systemName;
+                }
+            }
+        } catch(_) {}
+    }
+    loadSavedSettings();
+
+    function receiveLiveState(s) {
+        const el = document.getElementById('live-signal-bar');
+        if (!el) return;
+        el.classList.remove('hidden');
+
+        // Статус моніторингу
+        const statusEl = document.getElementById('ls-status');
+        if (statusEl) statusEl.textContent = s.isMonitoring ? '● Live' : '■ Paused';
+        if (statusEl) statusEl.className = s.isMonitoring
+            ? 'text-xs font-mono font-semibold text-green-600 dark:text-neon animate-pulse'
+            : 'text-xs font-mono font-semibold text-gray-400';
+
+        // CPU
+        const cpu = document.getElementById('ls-cpu');
+        if (cpu) cpu.textContent = s.cpuLoad + '%';
+        const cpuBar = document.getElementById('ls-cpu-bar');
+        if (cpuBar) { cpuBar.style.width = s.cpuLoad + '%'; cpuBar.style.background = s.cpuLoad > 80 ? '#ffa500' : '#39ff14'; }
+
+        // Temp
+        const temp = document.getElementById('ls-temp');
+        if (temp) temp.textContent = s.cpuTemp + '°C';
+
+        // RAM — використовуємо ramTotal з broadcast (не хардкод 16)
+        const ramTotal = s.ramTotal || 16;
+        const ramPct   = Math.round((s.ramUsed / ramTotal) * 100);
+        const ramEl    = document.getElementById('ls-ram');
+        if (ramEl) ramEl.textContent = ramPct + '%';
+        const ramBar = document.getElementById('ls-ram-bar');
+        if (ramBar) { ramBar.style.width = ramPct + '%'; ramBar.style.background = ramPct > 85 ? '#ffa500' : '#60a5fa'; }
+
+        // Network — безпечне перетворення
+        const netEl = document.getElementById('ls-net');
+        if (netEl) netEl.textContent = Number(s.networkDown).toFixed(1) + ' GB/s';
+
+        // Uptime
+        const uptimeEl = document.getElementById('ls-uptime');
+        if (uptimeEl && s.uptime != null) uptimeEl.textContent = s.uptime.toFixed(1) + '%';
+
+        // Timestamp
+        const ts = document.getElementById('ls-ts');
+        if (ts) ts.textContent = new Date(s.ts).toLocaleTimeString('uk-UA');
+    }
+
+    // Перевіряємо при завантаженні, чи є вже дані в storage
+    (function checkInitialState() {
+        try {
+            const raw = localStorage.getItem('srm-live-state');
+            if (raw) receiveLiveState(JSON.parse(raw));
+        } catch(_) {}
+    })();
 </script>
 </body>
 </html>
