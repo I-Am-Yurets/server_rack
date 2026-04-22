@@ -91,9 +91,8 @@ function DashboardPage({ state, logs, chartHistory, clearLogs, onNavigate, addLo
         </button>
       </section>
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+      <section className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
         <SensorCard label="Uptime"       value={`${state.uptime.toFixed(1)}%`}    icon="fa-arrow-trend-up" color="text-brand-primary"                                      subtext="За останні 30 днів"   onClick={() => onNavigate('analytics')} />
-        <SensorCard label="CPU Avg"      value={state.cpuLoad}    unit="%"         icon="fa-microchip"      color={cpuWarning ? 'text-status-error' : 'text-brand-primary'} subtext="Середнє за 5 хв"      warning={cpuWarning} onClick={() => onNavigate('cpu')} />
         <SensorCard label="SSH Sessions" value={state.sshCount}                    icon="fa-terminal"       color="text-brand-primary"                                      subtext={`● ${state.sshCount} активних`} onClick={() => onNavigate('servers')} />
         <SensorCard label="Net Download" value={state.networkDown.toFixed(1)} unit="GB/s" icon="fa-network-wired" color="text-brand-primary"                              subtext="Пропускна здатність"  onClick={() => onNavigate('network')} />
       </section>
@@ -176,6 +175,7 @@ export default function App() {
         <Header
           systemName={state.systemName}
           isMonitoring={state.isMonitoring}
+          serverOnline={state.serverOnline}
           onToggleMonitoring={toggleMonitoring}
           onOpenSettings={() => dispatchUi({ type: 'OPEN_SETTINGS' })}
           onToggleSidebar={() => dispatchUi({ type: 'TOGGLE_SIDEBAR' })}

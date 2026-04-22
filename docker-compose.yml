@@ -1,0 +1,63 @@
+# docker-compose.yml — Лабораторна робота №5
+# Оркестрація двох сервісів: backend (Node.js) та frontend (nginx + React)
+# Запуск: docker-compose up
+
+version: '3.9'
+
+services:
+
+  # ── Backend: Node.js + Express ──────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: server-rack-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"         # REST API доступний на http://localhost:3000
+    environment:
+      - PORT=3000
+      - TZ=Europe/Kyiv
+      - MAX_TEMP=${MAX_TEMP:-85}
+      - SYSTEM_NAME=${SYSTEM_NAME:-Rack-01 • Дата-центр UA-1}
+      - SENSOR_INTERVAL=${SENSOR_INTERVAL:-5000}
+    env_file:
+      - ./backend/.env
+    networks:
+      - rack-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── Frontend: React (Vite build) + nginx ────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # При збірці Docker — backend доступний на публічному порту
+        - VITE_API_URL=http://localhost:3000
+    container_name: server-rack-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"             # Додаток доступний на http://localhost
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - rack-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+# ── Shared Network ─────────────────────────────────────────────────────────────
+networks:
+  rack-net:
+    driver: bridge
+    name: server-rack-network

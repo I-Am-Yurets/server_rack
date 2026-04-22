@@ -1,23 +1,25 @@
 /**
- * useSensorData.js — Лабораторна робота №4
- * Кастомний хук для імітації даних датчиків серверної стійки.
+ * useSensorData.js — Лабораторна робота №5 (оновлено)
+ * Кастомний хук для отримання даних датчиків з Node.js сервера через fetch.
  *
- * ── Complex State ────────────────────────────────────────────────────────────
- * Увесь стан системи описується ОДНИМ об'єктом через useReducer.
- * Замість багатьох окремих useState використовується єдиний редюсер з
- * чіткими типами дій (actions), що відповідає вимозі "Complex State".
+ * ── Зміни відносно Лаб. №4 ───────────────────────────────────────────────
+ * • Дані тепер РЕАЛЬНО приходять з сервера (GET /api/status)
+ * • Локальний TICK-таймер замінено на polling-запити до бекенду
+ * • Збереження налаштувань надсилає POST /api/settings на сервер
+ * • При відсутності сервера — показується індикатор "Connection Lost"
  *
- * localStorage-ключі:
+ * ── localStorage-ключі збережено для fallback та синхронізації між вкладками ──
  *   'srm-settings'   — { systemName, maxTemp, sensorInterval }
- *   'srm-sensors'    — поточні значення датчиків (відновлюються після reload)
+ *   'srm-sensors'    — поточні значення датчиків
  *   'srm-logs'       — масив рядків логів (до 200 записів)
- *
- * Синхронізація між вкладками: через window 'storage' event.
  */
 
 import { useReducer, useEffect, useCallback, useRef } from 'react';
 
-/* ── Утиліти ──────────────────────────────────────────────────────────── */
+/* ── Базова URL адреса API (з .env або дефолт) ─────────────────────────── */
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+/* ── Утиліти генерації (fallback при відсутності сервера) ──────────────── */
 
 function randomInRange(min, max, step = 1) {
   const steps = Math.floor((max - min) / step);
@@ -32,7 +34,7 @@ const STORAGE_KEYS = {
 
 const MAX_LOGS = 200;
 
-/* ── Дефолтні значення ────────────────────────────────────────────────── */
+/* ── Дефолтні значення ─────────────────────────────────────────────────── */
 
 const DEFAULT_SETTINGS = {
   systemName:     'Rack-01 • Дата-центр UA-1',
@@ -65,7 +67,7 @@ const BOOT_LOGS = [
   { time: '14:29:18', level: 'OK',    message: 'Connection restored to backup-srv-01' },
 ];
 
-/* ── localStorage helpers ─────────────────────────────────────────────── */
+/* ── localStorage helpers ──────────────────────────────────────────────── */
 
 function loadSettings() {
   try {
@@ -136,92 +138,102 @@ function saveLogs(logs) {
   } catch (_) {}
 }
 
-/* ── Початковий стан (єдиний об'єкт) ─────────────────────────────────── */
+/* ── Початковий стан ───────────────────────────────────────────────────── */
 
 function buildInitialState() {
   const settings = loadSettings();
   const sensors  = loadSensors();
 
-  // Генеруємо початкову історію графіка
   const now = new Date();
   const chartHistory = Array.from({ length: 20 }, (_, i) => ({
     time: new Date(now - (19 - i) * 3000)
-      .toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        .toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     cpu: randomInRange(20, 90),
     ram: randomInRange(50, 95),
     net: randomInRange(1.2, 3.8, 0.1),
   }));
 
-  // Весь стан системи — один об'єкт
   return {
-    // ── Дані датчиків (оновлюються таймером) ──
-    sensors: { ...sensors },
-
-    // ── Налаштування системи (зберігаються в localStorage) ──
-    settings: { ...settings },
-
-    // ── Логи консолі ──
-    logs: loadLogs(),
-
-    // ── Дані для графіка ──
+    sensors:      { ...sensors },
+    settings:     { ...settings },
+    logs:         loadLogs(),
     chartHistory,
+    serverOnline: null,   // null = ще не перевіряли; true/false = результат
   };
 }
 
 /* ════════════════════════════════════════════════════════════════════════
-   REDUCER — єдина точка мутації стану
+   REDUCER
    ════════════════════════════════════════════════════════════════════════ */
 
 function sensorReducer(state, action) {
   switch (action.type) {
 
-    // Тік таймера — оновлення всіх датчиків
-    case 'TICK': {
-      if (!state.sensors.isMonitoring) return state;
+      // ── Отримані дані з сервера (замінює локальний TICK) ──
+    case 'SERVER_TICK': {
+      if (!state.sensors.isMonitoring) return { ...state, serverOnline: true };
 
+      const d = action.payload;
       const newSensors = {
         ...state.sensors,
-        cpuTemp:        randomInRange(48, 78),
-        cpuLoad:        randomInRange(20, 90),
-        sshCount:       randomInRange(1, 6),
-        networkDown:    randomInRange(1.2, 3.8, 0.1),
-        networkUp:      randomInRange(0.8, 2.4, 0.1),
-        networkLatency: randomInRange(8, 35),
-        ramUsed:        randomInRange(8.0, 15.2, 0.1),
-        diskUsed:       randomInRange(200, 420, 1),
-        swapUsed:       randomInRange(0.5, 4.0, 0.1),
+        cpuTemp:        d.cpuTemp        ?? state.sensors.cpuTemp,
+        cpuLoad:        d.cpuLoad        ?? state.sensors.cpuLoad,
+        sshCount:       d.sshCount       ?? state.sensors.sshCount,
+        networkDown:    d.networkDown    ?? state.sensors.networkDown,
+        networkUp:      d.networkUp      ?? state.sensors.networkUp,
+        networkLatency: d.networkLatency ?? state.sensors.networkLatency,
+        ramUsed:        d.ramUsed        ?? state.sensors.ramUsed,
+        ramTotal:       d.ramTotal       ?? state.sensors.ramTotal,
+        diskUsed:       d.diskUsed       ?? state.sensors.diskUsed,
+        diskTotal:      d.diskTotal      ?? state.sensors.diskTotal,
+        swapUsed:       d.swapUsed       ?? state.sensors.swapUsed,
+        uptime:         d.uptime         ?? state.sensors.uptime,
+      };
+
+      // Синхронізуємо налаштування з сервером (джерело істини)
+      const newSettings = {
+        ...state.settings,
+        systemName:     d.systemName !== undefined ? d.systemName : state.settings.systemName,
+        maxTemp:        d.maxTemp !== undefined ? d.maxTemp : state.settings.maxTemp,
+        sensorInterval: d.interval ? d.interval * 1000 : state.settings.sensorInterval,
       };
 
       const now = new Date().toLocaleTimeString('uk-UA',
-        { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const ramPct = Math.round((state.sensors.ramUsed / state.sensors.ramTotal) * 100);
-      const newPoint = { time: now, cpu: state.sensors.cpuLoad, ram: ramPct, net: +state.sensors.networkDown.toFixed(1) };
+          { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const ramPct = Math.round((newSensors.ramUsed / newSensors.ramTotal) * 100);
+      const newPoint = {
+        time: now,
+        cpu:  newSensors.cpuLoad,
+        ram:  ramPct,
+        net:  +newSensors.networkDown.toFixed(1),
+      };
       const newHistory = [...state.chartHistory, newPoint];
 
       return {
         ...state,
         sensors:      newSensors,
+        settings:     newSettings,
         chartHistory: newHistory.length > 30 ? newHistory.slice(-30) : newHistory,
+        serverOnline: true,
       };
     }
 
-    // Синхронізація датчиків з іншої вкладки
+      // ── Помилка з'єднання з сервером ──
+    case 'SERVER_ERROR': {
+      return { ...state, serverOnline: false };
+    }
+
+      // ── Синхронізація датчиків з іншої вкладки (localStorage) ──
     case 'SYNC_SENSORS': {
-      return {
-        ...state,
-        sensors: { ...state.sensors, ...action.payload },
-      };
+      return { ...state, sensors: { ...state.sensors, ...action.payload } };
     }
 
-    // Синхронізація налаштувань з іншої вкладки
+      // ── Синхронізація налаштувань з іншої вкладки ──
     case 'SYNC_SETTINGS': {
-      return {
-        ...state,
-        settings: { ...state.settings, ...action.payload },
-      };
+      return { ...state, settings: { ...state.settings, ...action.payload } };
     }
 
-    // Пауза / відновлення моніторингу
+      // ── Пауза / відновлення моніторингу ──
     case 'TOGGLE_MONITORING': {
       return {
         ...state,
@@ -229,7 +241,7 @@ function sensorReducer(state, action) {
       };
     }
 
-    // Збереження налаштувань
+      // ── Збереження налаштувань ──
     case 'APPLY_SETTINGS': {
       const { systemName, maxTemp, interval } = action.payload;
       const newSettings = {
@@ -237,13 +249,10 @@ function sensorReducer(state, action) {
         maxTemp:        Number(maxTemp) || state.settings.maxTemp,
         sensorInterval: interval ? Number(interval) * 1000 : state.settings.sensorInterval,
       };
-      return {
-        ...state,
-        settings: newSettings,
-      };
+      return { ...state, settings: newSettings };
     }
 
-    // Додавання запису до консолі
+      // ── Додавання запису до консолі ──
     case 'ADD_LOG': {
       const { level, message } = action.payload;
       const time = new Date().toTimeString().split(' ')[0];
@@ -254,12 +263,12 @@ function sensorReducer(state, action) {
       };
     }
 
-    // Очищення консолі
+      // ── Очищення консолі ──
     case 'CLEAR_LOGS': {
       return { ...state, logs: [] };
     }
 
-    // Повне перезавантаження стану з localStorage (після storage event)
+      // ── Синхронізація логів між вкладками ──
     case 'SYNC_LOGS': {
       return { ...state, logs: action.payload };
     }
@@ -275,42 +284,30 @@ function sensorReducer(state, action) {
 
 export function useSensorData() {
 
-  // Єдиний useReducer замість багатьох useState — Complex State
   const [appState, dispatch] = useReducer(sensorReducer, null, buildInitialState);
 
-  const timerRef  = useRef(null);
-  const stateRef  = useRef(appState);
-  stateRef.current = appState;
+  const stateRef        = useRef(appState);
+  stateRef.current      = appState;
+  const pollTimerRef    = useRef(null);
+  const wasOfflineRef   = useRef(false);
 
-  /* ── Persist датчиків при кожній зміні ── */
-  useEffect(() => {
-    saveSensors(appState.sensors);
-  }, [appState.sensors]);
+  /* ── Persist датчиків ── */
+  useEffect(() => { saveSensors(appState.sensors); }, [appState.sensors]);
 
-  /* ── Persist налаштувань при кожній зміні ── */
-  useEffect(() => {
-    saveSettings(appState.settings);
-  }, [appState.settings]);
+  /* ── Persist налаштувань ── */
+  useEffect(() => { saveSettings(appState.settings); }, [appState.settings]);
 
-  /* ── Persist логів при кожній зміні ── */
-  useEffect(() => {
-    saveLogs(appState.logs);
-  }, [appState.logs]);
+  /* ── Persist логів ── */
+  useEffect(() => { saveLogs(appState.logs); }, [appState.logs]);
 
-  /* ── Синхронізація між вкладками через storage event ── */
+  /* ── Синхронізація між вкладками ── */
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === STORAGE_KEYS.sensors && e.newValue) {
-        try {
-          const sensors = JSON.parse(e.newValue);
-          dispatch({ type: 'SYNC_SENSORS', payload: sensors });
-        } catch (_) {}
+        try { dispatch({ type: 'SYNC_SENSORS', payload: JSON.parse(e.newValue) }); } catch (_) {}
       }
       if (e.key === STORAGE_KEYS.settings && e.newValue) {
-        try {
-          const settings = JSON.parse(e.newValue);
-          dispatch({ type: 'SYNC_SETTINGS', payload: settings });
-        } catch (_) {}
+        try { dispatch({ type: 'SYNC_SETTINGS', payload: JSON.parse(e.newValue) }); } catch (_) {}
       }
       if (e.key === STORAGE_KEYS.logs && e.newValue) {
         try {
@@ -319,24 +316,65 @@ export function useSensorData() {
         } catch (_) {}
       }
     };
-
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  /* ── Таймер датчиків ── */
+  /* ══════════════════════════════════════════════════════════════════
+     POLLING — замінює локальний TICK таймер
+     Кожні sensorInterval мс робимо GET /api/status
+     ══════════════════════════════════════════════════════════════════ */
   useEffect(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (appState.sensors.isMonitoring) {
-      timerRef.current = setInterval(
-        () => dispatch({ type: 'TICK' }),
-        appState.settings.sensorInterval
-      );
-    }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [appState.sensors.isMonitoring, appState.settings.sensorInterval]);
+    if (pollTimerRef.current) clearInterval(pollTimerRef.current);
 
-  /* ── Публічні методи (useCallback для стабільних посилань) ── */
+    const poll = async () => {
+      // Не робимо запит якщо моніторинг на паузі
+      if (!stateRef.current.sensors.isMonitoring) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/status`, {
+          signal: AbortSignal.timeout(5000),
+          cache: 'no-store',
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json();
+        const data = json.data || json;
+
+        dispatch({ type: 'SERVER_TICK', payload: data });
+
+        // Якщо повернулись після розриву — логуємо відновлення
+        if (wasOfflineRef.current) {
+          wasOfflineRef.current = false;
+          dispatch({ type: 'ADD_LOG', payload: {
+              level: 'OK',
+              message: `Connection restored to ${API_BASE}`,
+            }});
+        }
+
+      } catch (err) {
+        dispatch({ type: 'SERVER_ERROR' });
+
+        // Логуємо "Connection Lost" тільки перший раз (не спамимо)
+        if (!wasOfflineRef.current) {
+          wasOfflineRef.current = true;
+          dispatch({ type: 'ADD_LOG', payload: {
+              level: 'ERROR',
+              message: `Connection Lost: cannot reach ${API_BASE}/api/status — ${err.message}`,
+            }});
+        }
+      }
+    };
+
+    // Перший запит одразу при монтуванні / зміні інтервалу
+    poll();
+    pollTimerRef.current = setInterval(poll, appState.settings.sensorInterval);
+
+    return () => { if (pollTimerRef.current) clearInterval(pollTimerRef.current); };
+  }, [appState.settings.sensorInterval, appState.sensors.isMonitoring]);
+
+  /* ── Публічні методи ── */
 
   const addLog = useCallback((level, message) => {
     dispatch({ type: 'ADD_LOG', payload: { level, message } });
@@ -344,35 +382,60 @@ export function useSensorData() {
 
   const toggleMonitoring = useCallback(() => {
     dispatch({ type: 'TOGGLE_MONITORING' });
-    // Логуємо після dispatch через setTimeout щоб прочитати актуальний стан
     setTimeout(() => {
       const isNowMonitoring = !stateRef.current.sensors.isMonitoring;
       dispatch({ type: 'ADD_LOG', payload: {
-        level:   isNowMonitoring ? 'OK'   : 'WARN',
-        message: isNowMonitoring ? 'Monitoring resumed by operator' : 'Monitoring paused by operator',
-      }});
+          level:   isNowMonitoring ? 'OK'   : 'WARN',
+          message: isNowMonitoring ? 'Monitoring resumed by operator' : 'Monitoring paused by operator',
+        }});
     }, 0);
   }, []);
 
   const applySettings = useCallback((newSettings) => {
     dispatch({ type: 'APPLY_SETTINGS', payload: newSettings });
-    setTimeout(() => {
-      const s = stateRef.current.settings;
-      dispatch({ type: 'ADD_LOG', payload: {
-        level:   'OK',
-        message: `Settings saved: "${s.systemName}" | MaxTemp: ${s.maxTemp}°C | Interval: ${s.sensorInterval / 1000}s`,
-      }});
-    }, 0);
+
+    // Надсилаємо налаштування на сервер (POST /api/settings)
+    fetch(`${API_BASE}/api/settings`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(newSettings),
+    })
+        .then(r => r.json())
+        .then(json => {
+          if (json.ok) {
+            dispatch({ type: 'ADD_LOG', payload: {
+                level:   'OK',
+                message: `Settings saved to server: "${json.applied.systemName}" | MaxTemp: ${json.applied.maxTemp}°C`,
+              }});
+          }
+        })
+        .catch(() => {
+          // Якщо сервер недоступний — зберігаємо тільки локально
+          setTimeout(() => {
+            const s = stateRef.current.settings;
+            dispatch({ type: 'ADD_LOG', payload: {
+                level:   'WARN',
+                message: `Settings saved locally (server offline): "${s.systemName}" | MaxTemp: ${s.maxTemp}°C`,
+              }});
+          }, 0);
+        });
   }, []);
 
   const clearLogs = useCallback(() => {
     dispatch({ type: 'CLEAR_LOGS' });
-    setTimeout(() => dispatch({ type: 'ADD_LOG', payload: { level: 'INFO', message: 'Console cleared by operator' } }), 0);
+    setTimeout(
+        () => dispatch({ type: 'ADD_LOG', payload: { level: 'INFO', message: 'Console cleared by operator' } }),
+        0
+    );
   }, []);
 
-  // Повертаємо плоский API для зворотної сумісності з компонентами
+  // Плоский API для зворотної сумісності з компонентами
   return {
-    state: { ...appState.sensors, ...appState.settings },
+    state: {
+      ...appState.sensors,
+      ...appState.settings,
+      serverOnline: appState.serverOnline,
+    },
     logs:          appState.logs,
     chartHistory:  appState.chartHistory,
     addLog,

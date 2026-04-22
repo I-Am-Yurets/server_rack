@@ -1,0 +1,33 @@
+# .dockerignore — Лабораторна робота №5
+# Виключаємо непотрібні файли з Docker Build Context
+
+# Node.js
+node_modules
+npm-debug.log*
+yarn-debug.log*
+
+# Vite build output (буде перегенеровано всередині контейнера)
+dist
+.cache
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# Environment (не включаємо .env у production образ)
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (не потрібні всередині образу)
+Dockerfile
+docker-compose.yml

@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 
-export default function Header({ systemName, isMonitoring, onToggleMonitoring, onOpenSettings, onToggleSidebar }) {
+export default function Header({ systemName, isMonitoring, serverOnline, onToggleMonitoring, onOpenSettings, onToggleSidebar }) {
   const [clock, setClock] = useState('');
 
   // Годинник — побічний ефект, тому в useEffect
@@ -32,8 +32,26 @@ export default function Header({ systemName, isMonitoring, onToggleMonitoring, o
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="hidden sm:flex items-center gap-2 bg-neon/10 border border-neon/40 text-green-700 dark:text-neon text-xs font-semibold px-4 py-2 rounded-full">
-          <span className="w-2 h-2 bg-brand-primary rounded-full animate-pulse-slow"></span>Всі системи OK
+        {/* Індикатор з'єднання з сервером — Лаб. №5 */}
+        <div className={`hidden sm:flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full border transition-all duration-500 ${
+          serverOnline === true
+            ? 'bg-neon/10 border-neon/40 text-green-700 dark:text-neon'
+            : serverOnline === false
+              ? 'bg-red-500/10 border-red-500/40 text-red-600 dark:text-red-400'
+              : 'bg-gray-100 dark:bg-ch-700 border-gray-300 dark:border-ch-600 text-gray-400 dark:text-ch-400'
+        }`}>
+          <span className={`w-2 h-2 rounded-full ${
+            serverOnline === true
+              ? 'bg-brand-primary animate-pulse-slow'
+              : serverOnline === false
+                ? 'bg-red-500'
+                : 'bg-gray-400 animate-pulse'
+          }`} />
+          {serverOnline === true
+            ? 'Сервер Online'
+            : serverOnline === false
+              ? '⚡ Connection Lost'
+              : 'Connecting...'}
         </div>
 
         {/* Кнопка toggle моніторингу — змінює стан isMonitoring через колбек */}
